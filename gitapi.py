@@ -1,7 +1,8 @@
+#use pip install pygithub to use the PyGitHub library
 from github import Github
 
 #Github instance:
-g = Github("6ce726b4f5cc4f5777a3bfe32c91b507b7bf6a16")
+g = Github("e792e1423f538d42a0e1762e49d2136994e96da7")
 
 for repo in g.get_user().get_repos():
     print (repo.name)
