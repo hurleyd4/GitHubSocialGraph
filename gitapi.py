@@ -1,8 +1,13 @@
 #use pip install pygithub to use the PyGitHub library
 from github import Github
 
+import sys
+
 #Github instance:
-g = Github("e792e1423f538d42a0e1762e49d2136994e96da7")
+g = Github(sys.argv[1],sys.argv[2])
+
 
 for repo in g.get_user().get_repos():
     print (repo.name)
+#for commit in g.get_user().get_commits():
+#    print (commit.name)
