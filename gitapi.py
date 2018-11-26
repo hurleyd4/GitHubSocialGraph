@@ -1,13 +1,21 @@
 #use pip install pygithub to use the PyGitHub library
 from github import Github
-
+import getpass
 import sys
 
+#print ("Please enter your username: ")
+#user = input()
+
+#print ("Please enter your password: ")
+#p = input()
+
 #Github instance:
-g = Github(sys.argv[1],sys.argv[2])
+g = Github("hurleyd4","githubpass1")
 
 
-for repo in g.get_user().get_repos():
-    print (repo.name)
+repo = g.get_repo("PyGithub/PyGithub")
+contents = repo.get_contents("")
+for content_file in contents:
+    print(content_file)
 #for commit in g.get_user().get_commits():
 #    print (commit.name)
