@@ -19,11 +19,18 @@ list = list()
 data = {}
 data['info'] = []
 
+repo_info ={}
+repo_info['info'] = []
+
 max_contributors = 0
 repo_with_most_contributors = "";
 
 for repo in g.get_user().get_repos():
     contributors2 = [ j for j in repo.get_contributors()]
+    repo_info['info'].append({
+        'repo': repo.name,
+        'contributors': len(contributors2)
+    })
     if (len(contributors2) > max_contributors):
         max_contributors = len(contributors2)
         repo_with_most_contributors = repo.name;
@@ -51,7 +58,8 @@ for repo in g.get_user().get_repos():
 with open('info.json', 'w') as outfile:
     json.dump(data, outfile)
 
-
+with open('repos.json', 'w') as outfile:
+    json.dump(repo_info, outfile)
 
 
 #contributors2 = [ j for j in repo.get_stats_commit_activity()]

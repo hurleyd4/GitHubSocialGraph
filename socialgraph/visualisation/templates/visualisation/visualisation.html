@@ -7,17 +7,41 @@
 	<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
 	<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 	
-	
+	<style>
+
+	  .bar{
+		fill: steelblue;
+	  }
+
+	  .bar:hover{
+		fill: brown;
+	  }
+
+		.axis {
+		  font: 10px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+	</style>
 	<script>
        d3.select("body").transition().style("background-color", "lightblue");
     </script>
-	<p>Visualisation below</p>
-	<p>Displays the names of contributors and the number of commits they've made to the users repository that has the most amount of contributors</p>
+	<p>Visualisation below.</p>
+	<p>The visualisation consists of a pie chart that shows the users repositories and how many contributors each one has.</p>
+	<p>The bar chart shows the number of commits by each contributor on the repository with the most contributors.</p>
+	<p>In this example my repository with the most contributors is KinectGestures, therefore the bar chart shows the number of commits per person for this repository.</p>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 
-	<script>
 	
-	d3.json("https://raw.githubusercontent.com/hurleyd4/GitHubSocialGraph/master/info.json",function(input) {
+<script>
+	
+	d3.json("https://raw.githubusercontent.com/hurleyd4/GitHubSocialGraph/master/repos.json",function(input) {
 		//console.log(input);
 		var i;
 		list = [];
@@ -37,8 +61,8 @@
 		var data = parsed[0];         // a simple user
 		
 	var w = 1000,                        //width
-		h = 500,                            //height
-		r = 200,                            //radius
+		h = 700,                            //height
+		r = 300,                            //radius
 		color = d3.scale.category20c();     //builtin range of colors
 
 		console.log(data);
@@ -48,13 +72,13 @@
 				.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
 				.attr("height", h)
 			.append("svg:g")                //make a group to hold our pie chart
-				.attr("transform", "translate(675,200 )" )  //move the center of the pie chart from 0, 0 to radius, radius
+				.attr("transform", "translate(675,400 )" )  //move the center of the pie chart from 0, 0 to radius, radius
 
 		var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
 			.outerRadius(r);
 
 		var pie = d3.layout.pie()           //this will create arc data for us given a list of values
-			.value(function(d) { return parseInt(d.commits); });    //we must tell it out to access the value of each element in our data array
+			.value(function(d) { return parseInt(d.contributors); });    //we must tell it out to access the value of each element in our data array
 
 		var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
 			.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
@@ -74,8 +98,103 @@
 					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
 				})
 				.attr("text-anchor", "middle")                          //center the text on it's origin
-				.text(function(d, i) { return data[i].name; });
+				.text(function(d, i) { return data[i].repo + ": " + data[i].contributors; });
 		
       })
-	</script>
+	</script>	
+	
+	
+	<script>
+		// set the dimensions of the canvas
+		var margin = {top: 20, right: 20, bottom: 70, left: 40},
+			width = 1200 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+
+
+		// set the ranges
+		var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+
+		var y = d3.scale.linear().range([height, 0]);
+
+		// define the axis
+		var xAxis = d3.svg.axis()
+			.scale(x)
+			.orient("bottom")
+
+
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left")
+			.ticks(10);
+
+
+		// add the SVG element
+		var svg = d3.select("body").append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+		  .append("g")
+			.attr("transform", 
+				  "translate(" + 85 + "," + 15 + ")");
+		//margin.top margin.left
+
+
+		// load the data
+		d3.json("https://raw.githubusercontent.com/hurleyd4/GitHubSocialGraph/master/info.json", function(error, input) {
+			list = [];
+			for (var key in input)
+			{
+				list.push(input[key]);
+			}
+			var string = JSON.stringify(list);
+			var fixed = string.slice(2,(string.length-2))
+			//console.log(fixed);
+
+			var parsed = JSON.parse(string); // an *array* that contains the user
+			var data = parsed[0];         
+			data.forEach(function(d) {
+				d.name = d.name;
+				d.commits = +d.commits;
+			});
+			
+		  // scale the range of the data
+		  x.domain(data.map(function(d) { return d.name; }));
+		  y.domain([0, d3.max(data, function(d) { return d.commits; })]);
+
+		  // add axis
+		  svg.append("g")
+			  .attr("class", "x axis")
+			  .attr("transform", "translate(0," + height + ")")
+			  .call(xAxis)
+			.selectAll("text")
+			  .style("text-anchor", "end")
+			  .attr("dx", "-.8em")
+			  .attr("dy", "-.55em")
+			  .attr("transform", "rotate(-90)" );
+
+		  svg.append("g")
+			  .attr("class", "y axis")
+			  .call(yAxis)
+			.append("text")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", 5)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text("Commits");
+
+
+		  // Add bar chart
+		  svg.selectAll("bar")
+			  .data(data)
+			.enter().append("rect")
+			  .attr("class", "bar")
+			  .attr("x", function(d) { return x(d.name); })
+			  .attr("width", x.rangeBand())
+			  .attr("y", function(d) { return y(d.commits); })
+			  .attr("height", function(d) { return height - y(d.commits); });
+
+		});
+
+</script>
+
+
 {% endblock %}
